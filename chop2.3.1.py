@@ -155,7 +155,7 @@ if __name__ == "__main__":
     # --- MODIFIED API LOGIC ---
     if args.spellcheck:
         # 1. Get the API key from your environment
-        api_key = os.getenv("AIzaSyBg5DbNaZ1SGNcoWGtSLuA-lBJgB1dEhag")
+        api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
             print("Error: GOOGLE_API_KEY environment variable not set.")
             print("Please set it to use the --spellcheck feature.")
