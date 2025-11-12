@@ -3,6 +3,7 @@ import re
 import argparse
 import os
 import glob
+import base64
 
 # --- Constants for Configuration ---
 REFERENCE_SHORT_LENGTH = 1000
@@ -15,10 +16,10 @@ LONG_TEXT_MAX_KEEP = 0.02   # Maximum for long texts (biased toward lower retent
 
 def clean_text(text):
     """
-    Converts text to lowercase and removes all special characters.
+    Converts text to lowercase and removes all special characters and numbers.
     """
     text = text.lower()
-    text = re.sub(r'[^a-z0-9\s]', '', text)  # Keep only letters, numbers, space
+    text = re.sub(r'[^a-z\s]', '', text)  # Keep only letters and space
     text = re.sub(r'\s+', ' ', text).strip()  # Collapse multiple spaces
     return text
 
@@ -44,6 +45,146 @@ def estimate_syllables(word):
     if count == 0:
         return 1
     return count
+
+
+def encrypt_word(word):
+    """
+    Encrypts a word using a simple cipher (ROT13-like with base64 encoding).
+    """
+    if not word:
+        return ""
+    # Use base64 encoding for encryption effect
+    encoded = base64.b64encode(word.encode()).decode()
+    # Truncate to similar length for visual effect
+    return encoded[:len(word) + 2] if len(encoded) > len(word) else encoded
+
+
+def create_broken_sentence_text_with_flicker(text, percentage_to_keep, min_syllables=6, max_syllables=12):
+    """
+    Creates text with alternating original and encrypted words for flickering effect.
+    Returns HTML with CSS animation.
+    """
+    words = text.split()
+
+    if not words:
+        return ""
+
+    # Calculate how many words to keep
+    k = int(len(words) * percentage_to_keep)
+    if k == 0 and len(words) > 0:
+        k = 1  # Ensure we keep at least one word
+
+    # Sample words randomly
+    sampled_words = random.sample(words, k)
+    
+    # Group words into lines based on syllable count (6-12 syllables per line)
+    all_lines = []
+    current_line_words = []
+    current_line_syllables = 0
+    
+    for word in sampled_words:
+        word_syllables = estimate_syllables(word)
+        
+        # Check if adding this word would exceed max_syllables
+        if (current_line_syllables + word_syllables > max_syllables) and (current_line_syllables >= min_syllables):
+            # Current line has enough syllables, start a new line
+            all_lines.append(current_line_words)
+            current_line_words = [word]
+            current_line_syllables = word_syllables
+        else:
+            # Add to current line
+            current_line_words.append(word)
+            current_line_syllables += word_syllables
+    
+    # Add the last line if it has any content
+    if current_line_words:
+        all_lines.append(current_line_words)
+    
+    # Create HTML with flickering effect
+    html_lines = []
+    for line_words in all_lines:
+        word_elements = []
+        for i, word in enumerate(line_words):
+            encrypted = encrypt_word(word)
+            # Alternate starting state for flickering effect
+            word_elements.append(
+                f'<span class="flicker-word" data-original="{word}" data-encrypted="{encrypted}" style="animation-delay: {i * 0.1}s;">{word}</span>'
+            )
+        html_lines.append('<div class="flicker-line">' + ' '.join(word_elements) + '</div>')
+    
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Flickering Text</title>
+    <style>
+        body {{
+            font-family: monospace;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            line-height: 1.8;
+        }}
+        .flicker-line {{
+            margin: 10px 0;
+        }}
+        .flicker-word {{
+            display: inline-block;
+            animation: flicker 2s infinite;
+            margin-right: 5px;
+        }}
+        @keyframes flicker {{
+            0%, 50% {{
+                opacity: 1;
+            }}
+            25%, 75% {{
+                opacity: 0;
+            }}
+        }}
+        .flicker-word::before {{
+            content: attr(data-encrypted);
+            position: absolute;
+            opacity: 0;
+            animation: flicker-encrypted 2s infinite;
+        }}
+        @keyframes flicker-encrypted {{
+            0%, 50% {{
+                opacity: 0;
+            }}
+            25%, 75% {{
+                opacity: 1;
+            }}
+        }}
+        .flicker-word {{
+            position: relative;
+        }}
+        .flicker-word:hover {{
+            animation-play-state: paused;
+        }}
+    </style>
+    <script>
+        // Enhanced flickering with word-by-word alternation
+        document.addEventListener('DOMContentLoaded', function() {{
+            const words = document.querySelectorAll('.flicker-word');
+            words.forEach((word, index) => {{
+                const original = word.getAttribute('data-original');
+                const encrypted = word.getAttribute('data-encrypted');
+                let showingOriginal = true;
+                
+                setInterval(() => {{
+                    word.textContent = showingOriginal ? encrypted : original;
+                    showingOriginal = !showingOriginal;
+                }}, 1000 + (index * 100)); // Stagger the flickering
+            }});
+        }});
+    </script>
+</head>
+<body>
+{''.join(html_lines)}
+</body>
+</html>"""
+    
+    return html_content
 
 
 def generate_title_filename(cleaned_text, input_filename):
@@ -162,11 +303,12 @@ def process_file(input_file, output_dir=None, fixed_retention=None):
     percentage_to_keep = calculate_biased_retention(text_length, fixed_retention)
     reduction_percentage = (1 - percentage_to_keep) * 100
 
-    # Create the broken sentence text
-    broken_text = create_broken_sentence_text(cleaned_text, percentage_to_keep)
+    # Create the broken sentence text with flickering effect
+    broken_text = create_broken_sentence_text_with_flicker(cleaned_text, percentage_to_keep)
     
     # Generate titled filename from the text
-    title_filename = generate_title_filename(cleaned_text, input_file)
+    title_base = generate_title_filename(cleaned_text, input_file).replace('.txt', '')
+    title_filename = f"{title_base}.html"
     
     # Determine output filename
     if output_dir:

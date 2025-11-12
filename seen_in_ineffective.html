@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Flickering Text</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            line-height: 1.8;
+        }
+        .flicker-line {
+            margin: 10px 0;
+        }
+        .flicker-word {
+            display: inline-block;
+            animation: flicker 2s infinite;
+            margin-right: 5px;
+        }
+        @keyframes flicker {
+            0%, 50% {
+                opacity: 1;
+            }
+            25%, 75% {
+                opacity: 0;
+            }
+        }
+        .flicker-word::before {
+            content: attr(data-encrypted);
+            position: absolute;
+            opacity: 0;
+            animation: flicker-encrypted 2s infinite;
+        }
+        @keyframes flicker-encrypted {
+            0%, 50% {
+                opacity: 0;
+            }
+            25%, 75% {
+                opacity: 1;
+            }
+        }
+        .flicker-word {
+            position: relative;
+        }
+        .flicker-word:hover {
+            animation-play-state: paused;
+        }
+    </style>
+    <script>
+        // Enhanced flickering with word-by-word alternation
+        document.addEventListener('DOMContentLoaded', function() {
+            const words = document.querySelectorAll('.flicker-word');
+            words.forEach((word, index) => {
+                const original = word.getAttribute('data-original');
+                const encrypted = word.getAttribute('data-encrypted');
+                let showingOriginal = true;
+                
+                setInterval(() => {
+                    word.textContent = showingOriginal ? encrypted : original;
+                    showingOriginal = !showingOriginal;
+                }, 1000 + (index * 100)); // Stagger the flickering
+            });
+        });
+    </script>
+</head>
+<body>
+<div class="flicker-line"><span class="flicker-word" data-original="the" data-encrypted="dGhl" style="animation-delay: 0.0s;">the</span> <span class="flicker-word" data-original="in" data-encrypted="aW4=" style="animation-delay: 0.1s;">in</span> <span class="flicker-word" data-original="poetry" data-encrypted="cG9ldHJ5" style="animation-delay: 0.2s;">poetry</span> <span class="flicker-word" data-original="the" data-encrypted="dGhl" style="animation-delay: 0.30000000000000004s;">the</span> <span class="flicker-word" data-original="his" data-encrypted="aGlz" style="animation-delay: 0.4s;">his</span> <span class="flicker-word" data-original="be" data-encrypted="YmU=" style="animation-delay: 0.5s;">be</span> <span class="flicker-word" data-original="instance" data-encrypted="aW5zdGFuY2" style="animation-delay: 0.6000000000000001s;">instance</span> <span class="flicker-word" data-original="they" data-encrypted="dGhleQ" style="animation-delay: 0.7000000000000001s;">they</span> <span class="flicker-word" data-original="passion" data-encrypted="cGFzc2lvb" style="animation-delay: 0.8s;">passion</span></div><div class="flicker-line"><span class="flicker-word" data-original="the" data-encrypted="dGhl" style="animation-delay: 0.0s;">the</span> <span class="flicker-word" data-original="itself" data-encrypted="aXRzZWxm" style="animation-delay: 0.1s;">itself</span> <span class="flicker-word" data-original="it" data-encrypted="aXQ=" style="animation-delay: 0.2s;">it</span> <span class="flicker-word" data-original="excellences" data-encrypted="ZXhjZWxsZW5jZ" style="animation-delay: 0.30000000000000004s;">excellences</span> <span class="flicker-word" data-original="of" data-encrypted="b2Y=" style="animation-delay: 0.4s;">of</span> <span class="flicker-word" data-original="language" data-encrypted="bGFuZ3VhZ2" style="animation-delay: 0.5s;">language</span></div><div class="flicker-line"><span class="flicker-word" data-original="conversant" data-encrypted="Y29udmVyc2Fu" style="animation-delay: 0.0s;">conversant</span> <span class="flicker-word" data-original="distress" data-encrypted="ZGlzdHJlc3" style="animation-delay: 0.1s;">distress</span> <span class="flicker-word" data-original="cannot" data-encrypted="Y2Fubm90" style="animation-delay: 0.2s;">cannot</span> <span class="flicker-word" data-original="themselves" data-encrypted="dGhlbXNlbHZl" style="animation-delay: 0.30000000000000004s;">themselves</span> <span class="flicker-word" data-original="but" data-encrypted="YnV0" style="animation-delay: 0.4s;">but</span></div><div class="flicker-line"><span class="flicker-word" data-original="having" data-encrypted="aGF2aW5n" style="animation-delay: 0.0s;">having</span> <span class="flicker-word" data-original="the" data-encrypted="dGhl" style="animation-delay: 0.1s;">the</span> <span class="flicker-word" data-original="lovers" data-encrypted="bG92ZXJz" style="animation-delay: 0.2s;">lovers</span> <span class="flicker-word" data-original="best" data-encrypted="YmVzdA" style="animation-delay: 0.30000000000000004s;">best</span> <span class="flicker-word" data-original="is" data-encrypted="aXM=" style="animation-delay: 0.4s;">is</span> <span class="flicker-word" data-original="could" data-encrypted="Y291bGQ" style="animation-delay: 0.5s;">could</span> <span class="flicker-word" data-original="does" data-encrypted="ZG9lcw" style="animation-delay: 0.6000000000000001s;">does</span> <span class="flicker-word" data-original="express" data-encrypted="ZXhwcmVzc" style="animation-delay: 0.7000000000000001s;">express</span> <span class="flicker-word" data-original="as" data-encrypted="YXM=" style="animation-delay: 0.8s;">as</span></div><div class="flicker-line"><span class="flicker-word" data-original="dependent" data-encrypted="ZGVwZW5kZW5" style="animation-delay: 0.0s;">dependent</span> <span class="flicker-word" data-original="roland" data-encrypted="cm9sYW5k" style="animation-delay: 0.1s;">roland</span> <span class="flicker-word" data-original="but" data-encrypted="YnV0" style="animation-delay: 0.2s;">but</span> <span class="flicker-word" data-original="we" data-encrypted="d2U=" style="animation-delay: 0.30000000000000004s;">we</span> <span class="flicker-word" data-original="could" data-encrypted="Y291bGQ" style="animation-delay: 0.4s;">could</span> <span class="flicker-word" data-original="sympathized" data-encrypted="c3ltcGF0aGl6Z" style="animation-delay: 0.5s;">sympathized</span></div><div class="flicker-line"><span class="flicker-word" data-original="shall" data-encrypted="c2hhbGw" style="animation-delay: 0.0s;">shall</span> <span class="flicker-word" data-original="the" data-encrypted="dGhl" style="animation-delay: 0.1s;">the</span> <span class="flicker-word" data-original="denying" data-encrypted="ZGVueWluZ" style="animation-delay: 0.2s;">denying</span> <span class="flicker-word" data-original="becomes" data-encrypted="YmVjb21lc" style="animation-delay: 0.30000000000000004s;">becomes</span> <span class="flicker-word" data-original="for" data-encrypted="Zm9y" style="animation-delay: 0.4s;">for</span> <span class="flicker-word" data-original="full" data-encrypted="ZnVsbA" style="animation-delay: 0.5s;">full</span> <span class="flicker-word" data-original="have" data-encrypted="aGF2ZQ" style="animation-delay: 0.6000000000000001s;">have</span> <span class="flicker-word" data-original="degree" data-encrypted="ZGVncmVl" style="animation-delay: 0.7000000000000001s;">degree</span></div><div class="flicker-line"><span class="flicker-word" data-original="oratory" data-encrypted="b3JhdG9ye" style="animation-delay: 0.0s;">oratory</span> <span class="flicker-word" data-original="french" data-encrypted="ZnJlbmNo" style="animation-delay: 0.1s;">french</span> <span class="flicker-word" data-original="mere" data-encrypted="bWVyZQ" style="animation-delay: 0.2s;">mere</span> <span class="flicker-word" data-original="but" data-encrypted="YnV0" style="animation-delay: 0.30000000000000004s;">but</span> <span class="flicker-word" data-original="persons" data-encrypted="cGVyc29uc" style="animation-delay: 0.4s;">persons</span> <span class="flicker-word" data-original="venuses" data-encrypted="dmVudXNlc" style="animation-delay: 0.5s;">venuses</span></div><div class="flicker-line"><span class="flicker-word" data-original="contemplating" data-encrypted="Y29udGVtcGxhdGl" style="animation-delay: 0.0s;">contemplating</span> <span class="flicker-word" data-original="as" data-encrypted="YXM=" style="animation-delay: 0.1s;">as</span> <span class="flicker-word" data-original="audience" data-encrypted="YXVkaWVuY2" style="animation-delay: 0.2s;">audience</span> <span class="flicker-word" data-original="are" data-encrypted="YXJl" style="animation-delay: 0.30000000000000004s;">are</span> <span class="flicker-word" data-original="must" data-encrypted="bXVzdA" style="animation-delay: 0.4s;">must</span> <span class="flicker-word" data-original="ebben" data-encrypted="ZWJiZW4" style="animation-delay: 0.5s;">ebben</span> <span class="flicker-word" data-original="mind" data-encrypted="bWluZA" style="animation-delay: 0.6000000000000001s;">mind</span></div><div class="flicker-line"><span class="flicker-word" data-original="passion" data-encrypted="cGFzc2lvb" style="animation-delay: 0.0s;">passion</span> <span class="flicker-word" data-original="also" data-encrypted="YWxzbw" style="animation-delay: 0.1s;">also</span> <span class="flicker-word" data-original="is" data-encrypted="aXM=" style="animation-delay: 0.2s;">is</span> <span class="flicker-word" data-original="most" data-encrypted="bW9zdA" style="animation-delay: 0.30000000000000004s;">most</span> <span class="flicker-word" data-original="is" data-encrypted="aXM=" style="animation-delay: 0.4s;">is</span> <span class="flicker-word" data-original="ceases" data-encrypted="Y2Vhc2Vz" style="animation-delay: 0.5s;">ceases</span> <span class="flicker-word" data-original="to" data-encrypted="dG8=" style="animation-delay: 0.6000000000000001s;">to</span> <span class="flicker-word" data-original="is" data-encrypted="aXM=" style="animation-delay: 0.7000000000000001s;">is</span></div>
+</body>
+</html>
