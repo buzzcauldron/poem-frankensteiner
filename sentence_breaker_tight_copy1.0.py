@@ -132,19 +132,16 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
     
     # Create HTML with flickering effect, centered with 2-3x line spacing
     html_lines = []
-    for line_index, line_words in enumerate(all_lines):
+    for line_words in all_lines:
         word_elements = []
-        # Alternate direction per line: even lines forward (1), odd lines reverse (-1)
-        flicker_direction = 1 if line_index % 2 == 0 else -1
-        
         for i, word in enumerate(line_words):
             encrypted = encrypt_word(word)
-            # Start with original for forward, encrypted for reverse
-            start_with_original = (flicker_direction == 1)
+            # Randomize starting state and direction for flickering effect
+            start_with_original = random.choice([True, False])
             initial_text = word if start_with_original else encrypted
-            # Slower intervals: 2000-4000ms instead of 800-2000ms
-            delay = i * 0.2  # Small stagger per word in line
-            interval = random.uniform(2000, 4000)  # Slower interval between 2000-4000ms
+            flicker_direction = random.choice([1, -1])  # 1 = forward, -1 = reverse
+            delay = random.uniform(0, 2.0)  # Random delay between 0-2 seconds
+            interval = random.uniform(800, 2000)  # Random interval between 800-2000ms
             
             word_elements.append(
                 f'<span class="flicker-word" data-original="{word}" data-encrypted="{encrypted}" '
@@ -155,8 +152,8 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
             )
         html_lines.append('<div class="flicker-line">' + ' '.join(word_elements) + '</div>')
     
-    # Reduced line spacing multiplier (0.3-0.5x) - significantly decreased but prevents overlap
-    line_spacing_multiplier = random.uniform(0.3, 0.5)
+    # Random line spacing multiplier (2-3x)
+    line_spacing_multiplier = random.uniform(2.0, 3.0)
     
     html_content = f"""<!DOCTYPE html>
 <html>
@@ -189,9 +186,8 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
             text-align: center;
         }}
         .flicker-line {{
-            margin: {line_spacing_multiplier * 0.5}em 0;
-            line-height: {max(1.0, line_spacing_multiplier * 0.8)};
-            min-height: 1.2em; /* Ensure minimum height to prevent overlap */
+            margin: {line_spacing_multiplier * 1.8}em 0;
+            line-height: {line_spacing_multiplier * 1.2};
         }}
         .flicker-word {{
             display: inline-block;
@@ -229,17 +225,28 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
         }}
     </style>
     <script>
-        // Enhanced flickering with random switching between original and encrypted
+        // Enhanced flickering with randomized direction and timing
         document.addEventListener('DOMContentLoaded', function() {{
             const words = document.querySelectorAll('.flicker-word');
             words.forEach((word) => {{
                 const original = word.getAttribute('data-original');
                 const encrypted = word.getAttribute('data-encrypted');
+                const startOriginal = word.getAttribute('data-start-original') === 'true';
+                const direction = parseInt(word.getAttribute('data-direction'));
                 const interval = parseInt(word.getAttribute('data-interval'));
                 
+                let showingOriginal = startOriginal;
+                
                 setInterval(() => {{
-                    // Randomly choose between original and encrypted
-                    word.textContent = Math.random() < 0.5 ? original : encrypted;
+                    if (direction === 1) {{
+                        // Forward direction: original -> encrypted -> original
+                        word.textContent = showingOriginal ? encrypted : original;
+                        showingOriginal = !showingOriginal;
+                    }} else {{
+                        // Reverse direction: encrypted -> original -> encrypted
+                        word.textContent = showingOriginal ? original : encrypted;
+                        showingOriginal = !showingOriginal;
+                    }}
                 }}, interval); // Randomized interval per word
             }});
         }});
@@ -403,7 +410,7 @@ def process_file(input_file, output_dir=None, fixed_retention=None):
 # --- Main execution ---
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Create broken-line texts with tight line spacing (0.3-0.5x), centered layout, and increased line count (24-30%% short, 3-6%% long retention)."
+        description="Create broken-line texts with 2-3x line spacing, centered layout, and increased line count (24-30%% short, 3-6%% long retention)."
     )
     parser.add_argument(
         "input",

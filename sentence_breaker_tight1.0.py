@@ -229,17 +229,28 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
         }}
     </style>
     <script>
-        // Enhanced flickering with random switching between original and encrypted
+        // Enhanced flickering with alternating direction per line
         document.addEventListener('DOMContentLoaded', function() {{
             const words = document.querySelectorAll('.flicker-word');
             words.forEach((word) => {{
                 const original = word.getAttribute('data-original');
                 const encrypted = word.getAttribute('data-encrypted');
+                const startOriginal = word.getAttribute('data-start-original') === 'true';
+                const direction = parseInt(word.getAttribute('data-direction'));
                 const interval = parseInt(word.getAttribute('data-interval'));
                 
+                let showingOriginal = startOriginal;
+                
                 setInterval(() => {{
-                    // Randomly choose between original and encrypted
-                    word.textContent = Math.random() < 0.5 ? original : encrypted;
+                    if (direction === 1) {{
+                        // Forward direction: original -> encrypted -> original
+                        word.textContent = showingOriginal ? encrypted : original;
+                        showingOriginal = !showingOriginal;
+                    }} else {{
+                        // Reverse direction: encrypted -> original -> encrypted
+                        word.textContent = showingOriginal ? original : encrypted;
+                        showingOriginal = !showingOriginal;
+                    }}
                 }}, interval); // Randomized interval per word
             }});
         }});
