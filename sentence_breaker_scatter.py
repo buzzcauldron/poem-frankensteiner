@@ -89,14 +89,14 @@ def get_random_line_syllable_limits():
 def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
     """
     Creates text with alternating original and encrypted words for flickering effect.
-    Returns HTML with CSS animation. Uses longer lines (3-5x) with random fluctuation.
+    Returns HTML with CSS animation. Uses line-based layout with 2-3x spacing, centered, and more lines.
     """
     words = text.split()
 
     if not words:
         return ""
 
-    # Calculate how many words to keep
+    # Calculate how many words to keep (increase to get more lines)
     k = int(len(words) * percentage_to_keep)
     if k == 0 and len(words) > 0:
         k = 1  # Ensure we keep at least one word
@@ -105,10 +105,12 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
     sampled_words = random.sample(words, k)
     
     # Group words into lines based on syllable count with random fluctuation
+    # Increase line length 3x
     all_lines = []
     current_line_words = []
     current_line_syllables = 0
-    min_syllables, max_syllables = get_random_line_syllable_limits()
+    # Increase syllable limits 3x (from 3-8 to 9-24)
+    min_syllables, max_syllables = 9, 24  # Longer lines
     
     for word in sampled_words:
         word_syllables = estimate_syllables(word)
@@ -119,8 +121,6 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
             all_lines.append(current_line_words)
             current_line_words = [word]
             current_line_syllables = word_syllables
-            # Get new random limits for the next line
-            min_syllables, max_syllables = get_random_line_syllable_limits()
         else:
             # Add to current line
             current_line_words.append(word)
@@ -130,17 +130,30 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
     if current_line_words:
         all_lines.append(current_line_words)
     
-    # Create HTML with flickering effect
+    # Create HTML with flickering effect, centered with 2-3x line spacing
     html_lines = []
     for line_words in all_lines:
         word_elements = []
         for i, word in enumerate(line_words):
             encrypted = encrypt_word(word)
-            # Alternate starting state for flickering effect
+            # Randomize starting state and direction for flickering effect
+            start_with_original = random.choice([True, False])
+            initial_text = word if start_with_original else encrypted
+            flicker_direction = random.choice([1, -1])  # 1 = forward, -1 = reverse
+            delay = random.uniform(0, 2.0)  # Random delay between 0-2 seconds
+            interval = random.uniform(800, 2000)  # Random interval between 800-2000ms
+            
             word_elements.append(
-                f'<span class="flicker-word" data-original="{word}" data-encrypted="{encrypted}" style="animation-delay: {i * 0.1}s;">{word}</span>'
+                f'<span class="flicker-word" data-original="{word}" data-encrypted="{encrypted}" '
+                f'data-start-original="{str(start_with_original).lower()}" '
+                f'data-direction="{flicker_direction}" '
+                f'data-interval="{interval}" '
+                f'style="animation-delay: {delay}s;">{initial_text}</span>'
             )
         html_lines.append('<div class="flicker-line">' + ' '.join(word_elements) + '</div>')
+    
+    # Random line spacing multiplier (2-3x)
+    line_spacing_multiplier = random.uniform(2.0, 3.0)
     
     html_content = f"""<!DOCTYPE html>
 <html>
@@ -148,20 +161,39 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
     <meta charset="UTF-8">
     <title>Flickering Text</title>
     <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        html, body {{
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+        }}
         body {{
             font-family: monospace;
             background: #000;
             color: #fff;
-            padding: 20px;
-            line-height: 1.8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }}
+        .content-container {{
+            max-width: 80%;
+            text-align: center;
         }}
         .flicker-line {{
-            margin: 10px 0;
+            margin: {line_spacing_multiplier * 1.8}em 0;
+            line-height: {line_spacing_multiplier * 1.2};
         }}
         .flicker-word {{
             display: inline-block;
             animation: flicker 2s infinite;
-            margin-right: 5px;
+            margin-right: 8px;
+            font-size: 1.1em;
         }}
         @keyframes flicker {{
             0%, 50% {{
@@ -193,24 +225,37 @@ def create_broken_sentence_text_with_flicker(text, percentage_to_keep):
         }}
     </style>
     <script>
-        // Enhanced flickering with word-by-word alternation
+        // Enhanced flickering with randomized direction and timing
         document.addEventListener('DOMContentLoaded', function() {{
             const words = document.querySelectorAll('.flicker-word');
-            words.forEach((word, index) => {{
+            words.forEach((word) => {{
                 const original = word.getAttribute('data-original');
                 const encrypted = word.getAttribute('data-encrypted');
-                let showingOriginal = true;
+                const startOriginal = word.getAttribute('data-start-original') === 'true';
+                const direction = parseInt(word.getAttribute('data-direction'));
+                const interval = parseInt(word.getAttribute('data-interval'));
+                
+                let showingOriginal = startOriginal;
                 
                 setInterval(() => {{
-                    word.textContent = showingOriginal ? encrypted : original;
-                    showingOriginal = !showingOriginal;
-                }}, 1000 + (index * 100)); // Stagger the flickering
+                    if (direction === 1) {{
+                        // Forward direction: original -> encrypted -> original
+                        word.textContent = showingOriginal ? encrypted : original;
+                        showingOriginal = !showingOriginal;
+                    }} else {{
+                        // Reverse direction: encrypted -> original -> encrypted
+                        word.textContent = showingOriginal ? original : encrypted;
+                        showingOriginal = !showingOriginal;
+                    }}
+                }}, interval); // Randomized interval per word
             }});
         }});
     </script>
 </head>
 <body>
+    <div class="content-container">
 {''.join(html_lines)}
+    </div>
 </body>
 </html>"""
     
@@ -354,7 +399,7 @@ def process_file(input_file, output_dir=None, fixed_retention=None):
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(broken_text)
-        num_lines = len(broken_text.splitlines())
+        num_lines = len(broken_text.split('<div class="flicker-line">')) - 1
         print(f"Created: {output_file} ({num_lines} lines, {reduction_percentage:.0f}% reduction)")
         return output_file
     except Exception as e:
@@ -365,7 +410,7 @@ def process_file(input_file, output_dir=None, fixed_retention=None):
 # --- Main execution ---
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Create broken-line texts with 3x increased word retention (24-30%% short, 3-6%% long) and 3x more lines (6-20 syllables per line) with random fluctuation."
+        description="Create broken-line texts with 2-3x line spacing, centered layout, and increased line count (24-30%% short, 3-6%% long retention)."
     )
     parser.add_argument(
         "input",
@@ -382,7 +427,7 @@ if __name__ == "__main__":
         "-k",
         type=float,
         default=None,
-        help="Fixed percentage of words to keep (0.01-0.10). If not specified, uses biased random retention (10%%-1%%) based on text length."
+        help="Fixed percentage of words to keep (0.01-0.10). If not specified, uses biased random retention (30%%-3%%) based on text length."
     )
     parser.add_argument(
         "--all",
